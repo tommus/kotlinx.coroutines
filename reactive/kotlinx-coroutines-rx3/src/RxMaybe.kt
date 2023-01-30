@@ -32,9 +32,10 @@ private fun <T> rxMaybeInternal(
     block: suspend CoroutineScope.() -> T?
 ): Maybe<T & Any> = Maybe.create { subscriber ->
     val newContext = scope.newCoroutineContext(context)
-    val coroutine = RxMaybeCoroutine(newContext, subscriber)
+    val coroutine: RxMaybeCoroutine<T> = RxMaybeCoroutine(newContext, subscriber)
     subscriber.setCancellable(RxCancellable(coroutine))
-    coroutine.start(CoroutineStart.DEFAULT, coroutine, block)
+    @Suppress("UNCHECKED_CAST")
+    coroutine.start(CoroutineStart.DEFAULT, coroutine, block as (suspend  RxMaybeCoroutine<T>.() -> T))
 }
 
 private class RxMaybeCoroutine<T>(
